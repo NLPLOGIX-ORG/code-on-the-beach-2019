@@ -32,20 +32,20 @@ class Record:
     buildingheatedarea: str = None
 
     #00007
-    bedrooms:   int = -1
-    bathrooms:  int = -1
-    rooms:      int = -1
-    stories:    int = -1
+    bedrooms:   int = 0
+    bathrooms:  int = 0
+    rooms:      int = 0
+    stories:    int = 0
+
+    #00009
+    condo_bedrooms:   int = 0
+    condo_bathrooms:  int = 0
 
     #00010
     amenityitemcode: str = None
 
     #00015
-    exemptioncode: str = None
-
-    #00017
-    dateofsale: str = None
-    saleprice: float = 0.0
+    exemptioncode: str = None  
 
     def update(self, rowtype, colvalues):
         if rowtype == "00001":
@@ -91,22 +91,23 @@ class Record:
 
             code     = colvalues[0]
             colvalue = colvalues[1].strip().replace('\\n', '') if colvalues[1] is not None else None
-            if self.bedrooms < 1 and code == 'BR':
+            if self.bedrooms == 0 and code == 'BR':
                 self.bedrooms = int(float(colvalue)) if colvalue is not None else 0
 
-            if self.bathrooms < 1 and code == 'BT':
+            if self.bathrooms == 0 and code == 'BT':
                 self.bathrooms = int(float(colvalue)) if colvalue is not None else 0
 
-            if self.stories < 1 and code == 'SH':
+            if self.stories == 0 and code == 'SH':
                 self.stories = int(float(colvalue)) if colvalue is not None else 0
 
-            if self.rooms < 1 and code == 'RM':
+            if self.rooms == 0 and code == 'RM':
                 self.rooms = int(float(colvalue)) if colvalue is not None else 0
 
         if rowtype == "00009":
-            assert len(colvalues) == 3,"row type of {} should have a length of 3 but has a length of {}".format(rowtype, len(colvalues))
+            assert len(colvalues) == 2,"row type of {} should have a length of 2 but has a length of {}".format(rowtype, len(colvalues))
             
-            self.area       = int(colvalues[2]) if colvalues[2] is not None and colvalues[2].strip() != '' else 0
+            self.condo_bedrooms       = int(float(colvalues[0])) if colvalues[0] is not None and colvalues[0].strip() != '' else 0
+            self.condo_bathrooms      = int(float(colvalues[1])) if colvalues[1] is not None and colvalues[1].strip() != '' else 0
 
             return
 
@@ -122,20 +123,17 @@ class Record:
 
             self.exemptioncode    = colvalues[0] if colvalues is not None else None
             
-            return
-
-        if rowtype == "00017":
-            assert len(colvalues) == 2,"row type of {} should have a length of 2 but has a length of {}".format(rowtype, len(colvalues))
-
-            self.dateofsale = colvalues[0]
-            self.saleprice  = float(colvalues[1])
-            
-            return
+            return       
 
     def isreadyforinsert(self):
-        return self.dateofsale is not None and self.saleprice is not None
+        return self.exemptioncode in  ["HB", "HX"] and self.parcelnumber is not None
 
     def toarray(self):
+        is_condo = self.buildingtypecode == 401
+
+        num_bedrooms   = self.condo_bedrooms if is_condo else self.bedrooms
+        num_bathrooms  = self.condo_bathrooms if is_condo else self.bathrooms        
+
         return [
             #00001
             self.parcelnumber,
@@ -166,8 +164,8 @@ class Record:
             self.buildingheatedarea,
 
             #00007
-            self.bedrooms,
-            self.bathrooms,
+            num_bedrooms,
+            num_bathrooms,
             self.rooms,
             self.stories,
             
@@ -175,9 +173,17 @@ class Record:
             self.amenityitemcode,
 
             #00015
-            self.exemptioncode,
-            
-            #00017
-            self.dateofsale,
-            self.saleprice
+            self.exemptioncode                       
         ]
+
+    def column_to_string(self, x):
+        if isinstance(x, str):
+            return '"' + x + '"'
+
+        if x is None:
+            return ''
+
+        return str(x)
+
+    def to_string(self):
+       return '|'.join([self.column_to_string(x) for x in self.toarray()])
