@@ -23,6 +23,7 @@ class Record:
 
     #00005
     buildingtypecode: str = None
+    buildingtypename: str = None
     buildingstylecode: str = None
     buildingclasscode: str = None
     qualitycode: str = None
@@ -74,34 +75,39 @@ class Record:
             return
 
         if rowtype == "00005":
-            assert len(colvalues) == 8,"row type of {} should have a length of 8 but has a length of {}".format(rowtype, len(colvalues))
+            assert len(colvalues) == 9,"row type of {} should have a length of 9 but has a length of {}".format(rowtype, len(colvalues))
 
             self.buildingtypecode       = colvalues[0]
-            self.buildingstylecode      = colvalues[1]
-            self.buildingclasscode      = colvalues[2]
-            self.qualitycode            = colvalues[3]
-            self.actualyearbuilt        = int(colvalues[4])
-            self.effectiveyearbuilt     = int(colvalues[5])
-            self.buildingvalue          = float(colvalues[6])
-            self.buildingheatedarea     = colvalues[7]
+            self.buildingtypename       = colvalues[1]
+            self.buildingstylecode      = colvalues[2]
+            self.buildingclasscode      = colvalues[3]
+            self.qualitycode            = colvalues[4]
+            self.actualyearbuilt        = int(colvalues[5])
+            self.effectiveyearbuilt     = int(colvalues[6])
+            self.buildingvalue          = float(colvalues[7])
+            self.buildingheatedarea     = colvalues[8]
 
             return
 
         if rowtype == "00007":
 
-            code     = colvalues[0]
-            colvalue = colvalues[1].strip().replace('\\n', '') if colvalues[1] is not None else None
-            if self.bedrooms == 0 and code == 'BR':
-                self.bedrooms = int(float(colvalue)) if colvalue is not None else 0
+            #if we are not a condo then get the bedrooms and bethrooms from here
+            if self.buildingtypecode != 401:
+                code     = colvalues[0]
+                colvalue = colvalues[1].strip().replace('\n', '') if colvalues[1] is not None else None
+                if code == 'BR':
+                    self.bedrooms = int(float(colvalue)) if colvalue is not None else 0
 
-            if self.bathrooms == 0 and code == 'BT':
-                self.bathrooms = int(float(colvalue)) if colvalue is not None else 0
+                if code == 'BT':
+                    self.bathrooms = int(float(colvalue)) if colvalue is not None else 0
+                    if self.bathrooms == 129:
+                        print("{} - {} - {}".format(self.parcelnumber, self.buildingtypecode, colvalues))
 
-            if self.stories == 0 and code == 'SH':
-                self.stories = int(float(colvalue)) if colvalue is not None else 0
+                if code == 'SH':
+                    self.stories = int(float(colvalue)) if colvalue is not None else 0
 
-            if self.rooms == 0 and code == 'RM':
-                self.rooms = int(float(colvalue)) if colvalue is not None else 0
+                if code == 'RM':
+                    self.rooms = int(float(colvalue)) if colvalue is not None else 0
 
         if rowtype == "00009":
             assert len(colvalues) == 2,"row type of {} should have a length of 2 but has a length of {}".format(rowtype, len(colvalues))
@@ -126,15 +132,50 @@ class Record:
             return       
 
     def isreadyforinsert(self):
-        return self.exemptioncode in  ["HB", "HX"] and self.parcelnumber is not None
+        supported_building_types = [
+            #'SFR 1 STORY', 
+            #'MH UNASSESSED', 
+            #'MH ASSESSED', 
+            #'SFR 2 STORY',
+            #'SFR SPLIT-LEVEL', 
+            'GARAGE APT', 
+            #'WHSE MINI', 
+            # 'WHSE PREFAB',
+            #'SFR CLASS 2', 
+            #'SERV GAR / VEH RP', 
+            #'SFR 3 STORY', 
+            #'TRIPLEX',
+            #'CONVERTED RESIDENCE', 
+            #'CHURCH', 
+            # 'UTILITY BLDG', 
+            'TOWNHOUSE',
+            #'STORE RETAIL', 
+            # 'DUPLEX', 
+            'CONDOMINIUM', 
+            #'WHSE SHELL', nan, 
+            # 'MOTEL',
+            #'DAY CARE CTR', 
+            # 'ROOMING HOUSE', 
+            # 'QUADRUPLEX', 
+            # 'OFFICE 1-2 STY',
+            #'SFR CLASS 3', 
+            'APTS  1-3 STORY', 
+            #'WHSE STORAGE', 
+            'COOP APARTMENT',
+            #'CONDO GAR/CP'
+        ]
+
+        #ignore 3901 Motel
+        return self.exemptioncode in  ["HB", "HX"] and self.parcelnumber is not None and self.buildingtypename in supported_building_types
 
     def toarray(self):
         is_condo = self.buildingtypecode == 401
 
         num_bedrooms   = self.condo_bedrooms if is_condo else self.bedrooms
-        num_bathrooms  = self.condo_bathrooms if is_condo else self.bathrooms        
+        num_bathrooms  = self.condo_bathrooms if is_condo else self.bathrooms
 
-        return [
+        
+        result = [
             #00001
             self.parcelnumber,
             self.section,
@@ -155,6 +196,7 @@ class Record:
 
             #00005
             self.buildingtypecode,
+            self.buildingtypename,
             self.buildingstylecode,
             self.buildingclasscode,
             self.qualitycode,
@@ -175,6 +217,9 @@ class Record:
             #00015
             self.exemptioncode                       
         ]
+
+        return result
+
 
     def column_to_string(self, x):
         if isinstance(x, str):
