@@ -1,3 +1,5 @@
+if not exist "notebook\.model" mkdir notebook\.model
+
 docker stop codeonthebeach2019notebook
 docker rm codeonthebeach2019notebook
 
