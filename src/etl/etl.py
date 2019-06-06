@@ -11,9 +11,9 @@ from record import Record
 
 if __name__ == '__main__':
     
-    fpath = os.path.join(".data", "2018 DUVAL COUNTY REAL COMBINED TAX ROLL CERTIFIED.TXT")
+    fpath = os.path.join("data", "2018 DUVAL COUNTY REAL COMBINED TAX ROLL CERTIFIED.TXT")
 
-    outpath = os.path.join(".data", "casetable.psv")
+    outpath = os.path.join("data", "casetable.psv")
 
     if os.path.exists(fpath) == False:
         raise ValueError("path " + fpath + " does not exist")
@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     recordfields = {}
     
-    recordfields["00001"] = [("Parcel Number", 2), ("Section", 3), ("Township", 4), ("Total Market Value", 22), ("Assessed Value", 23), ("Total Just Value", 25), ("doc acres", 31)]
+    recordfields["00001"] = [("Parcel Number", 2), ("Section", 3), ("Township", 4), ("Zipcode", 4), ("Total Market Value", 22), ("Assessed Value", 23), ("Total Just Value", 25), ("doc acres", 31)]
     recordfields["00004"] = [("Site Address Number", 3), ("Site Address Street Name", 5), ("Site Address Street Type", 6), ("Site Address Unit Number", 7), ("Site Address City", 8), ("Site Zip Code", 9), ("Building Number", 10) ]
     recordfields["00005"] = [("building type code", 4), ("building type name", 5), ("building style code", 6), ("building class code", 7), ("quality code", 8), ("actual year built", 9), ("effective year built", 10), ("building value", 12), ("building heated area", 13)]
     recordfields["00007"] = [ ("Number Of Bedrooms", 4), ("Number Of Bathrooms", 6), ("Number Of Rooms", 6), ("Number Of Stories", 6)]
