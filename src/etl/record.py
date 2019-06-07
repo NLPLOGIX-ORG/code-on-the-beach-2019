@@ -53,7 +53,7 @@ class Record:
             assert len(colvalues) == 7,"row type of {} should have a length of 7 but has a length of {}".format(rowtype, len(colvalues))
             self.parcelnumber       = colvalues[0]
             self.section            = colvalues[1]
-            self.township           = colvalues[2]
+            self.township           = colvalues[2]            
             self.totalmarketvalue   = float(colvalues[3])
             self.assessedvalue      = float(colvalues[4])
             self.totaljustvalue     = float(colvalues[5])
@@ -71,6 +71,10 @@ class Record:
             self.siteaddresscity        = colvalues[4]
             self.sitezipcode            = colvalues[5]
             self.buildingnumber         = colvalues[6]
+
+            if self.sitezipcode is not None:
+                self.sitezipcode = self.sitezipcode.split('-')[0]
+                self.sitezipcode = self.sitezipcode.replace(' ', '')
 
             return
 
