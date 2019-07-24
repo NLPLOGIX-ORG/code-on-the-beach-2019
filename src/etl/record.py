@@ -45,6 +45,9 @@ class Record:
     #00010
     amenityitemcode: str = None
 
+    #00011
+    haspool: int = 0
+
     #00015
     exemptioncode: str = None  
 
@@ -125,6 +128,14 @@ class Record:
             assert len(colvalues) == 1,"row type of {} should have a length of 1 but has a length of {}".format(rowtype, len(colvalues))
 
             self.amenityitemcode    = colvalues[0]
+            
+            return
+
+        if rowtype == "00011":
+            assert len(colvalues) == 1,"row type of {} should have a length of 1 but has a length of {}".format(rowtype, len(colvalues))
+
+            if self.haspool == 0:
+                self.haspool = 1 if "Pool" in colvalues[0] else 0
             
             return
 
@@ -217,6 +228,9 @@ class Record:
             
             #00010
             self.amenityitemcode,
+
+            #00011
+            self.haspool,
 
             #00015
             self.exemptioncode                       

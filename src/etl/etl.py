@@ -30,9 +30,10 @@ if __name__ == '__main__':
     recordfields["00007"] = [ ("Number Of Bedrooms", 4), ("Number Of Bathrooms", 6), ("Number Of Rooms", 6), ("Number Of Stories", 6)]
     recordfields["00009"] = [("Condo Number Of Bedrooms", 9), ("Condo Number Of Bathrooms", 10)]
     recordfields["00010"] = [("Amenity Item Code", 4)]
+    recordfields["00011"] = [("HasPool", 5)]
     recordfields["00015"] = [("Exemption Code", 5)]
 
-    keys = ["00001", "00004", "00005", "00007", "00010", "00015"]
+    keys = ["00001", "00004", "00005", "00007", "00010", "00011", "00015"]
 
     #create the column headers
     column_headers = []
